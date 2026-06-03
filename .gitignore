@@ -12,11 +12,15 @@ node_modules
 .DS_Store
 Thumbs.db
 
-# Env
+# Env / secrets (절대 커밋 금지)
 .env
 .env.*
 !.env.example
 !.env.test
+.dev.vars
+.dev.vars.*
+*.pem
+*.key
 
 # Vite
 vite.config.js.timestamp-*
