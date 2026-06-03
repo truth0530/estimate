@@ -5,6 +5,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import { compressImage } from '$lib/image';
 	import { formatBytes, daysSince, lastBackupLabel } from '$lib/format';
+	import { downloadBackup } from '$lib/export/backup';
 
 	function current(): Company {
 		return (
@@ -39,14 +40,7 @@
 	const backupDays = $derived(daysSince(db.lastBackupAt, Date.now()));
 
 	function exportBackup() {
-		const json = db.exportSnapshot();
-		const blob = new Blob([json], { type: 'application/json' });
-		const url = URL.createObjectURL(blob);
-		const a = document.createElement('a');
-		a.href = url;
-		a.download = `견적백업_${new Date().toISOString().slice(0, 10)}.json`;
-		a.click();
-		URL.revokeObjectURL(url);
+		downloadBackup();
 	}
 	function onImport(e: Event) {
 		const f = (e.target as HTMLInputElement).files?.[0];

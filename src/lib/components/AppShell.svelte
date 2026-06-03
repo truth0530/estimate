@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { db } from '$lib/data/db.svelte';
+	import BackupNudge from './BackupNudge.svelte';
 	let { children } = $props();
 
 	const nav = [
@@ -45,6 +46,8 @@
 				</div>
 			</div>
 		{/if}
+
+		<BackupNudge />
 
 		<main class="mx-auto max-w-3xl px-4 {showDock ? 'pb-24' : 'pb-28'}">
 			{@render children()}
