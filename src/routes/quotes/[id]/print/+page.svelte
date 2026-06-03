@@ -4,6 +4,7 @@
 	import { won } from '$lib/money';
 	import { koreanAmount } from '$lib/korean-number';
 	import { exportQuotePdf } from '$lib/export/pdf';
+	import { exportQuotePdfVector } from '$lib/export/pdf-vector';
 
 	const quote = $derived(db.getQuote(page.params.id ?? null));
 	const customer = $derived(quote ? db.getCustomer(quote.customer_id) : null);
@@ -17,18 +18,32 @@
 	const scale = $derived(frameW ? Math.min(1, frameW / A4W) : 1);
 
 	let sheetEl = $state<HTMLElement>();
-	let pdfBusy = $state(false);
+	let busy = $state<'' | 'vector' | 'image'>('');
 
-	async function savePdf() {
-		if (!sheetEl || !quote || pdfBusy) return;
-		pdfBusy = true;
+	// 기본: 벡터(텍스트 선택·복사 가능, 다중 페이지 행 안 잘림)
+	async function savePdfVector() {
+		if (!quote || busy) return;
+		busy = 'vector';
 		try {
-			await exportQuotePdf(sheetEl, `견적서_${quote.quote_number}.pdf`);
+			await exportQuotePdfVector(quote, company, customer, `견적서_${quote.quote_number}.pdf`);
 		} catch (e) {
-			console.error('[pdf]', e);
-			alert('PDF 생성에 실패했습니다. 다시 시도해 주세요.');
+			console.error('[pdf-vector]', e);
+			alert(e instanceof Error ? e.message : 'PDF 생성에 실패했습니다.');
 		} finally {
-			pdfBusy = false;
+			busy = '';
+		}
+	}
+	// 보조: 화면 그대로 이미지(픽셀 동일, 텍스트 선택 불가)
+	async function savePdfImage() {
+		if (!sheetEl || !quote || busy) return;
+		busy = 'image';
+		try {
+			await exportQuotePdf(sheetEl, `견적서_${quote.quote_number}_이미지.pdf`);
+		} catch (e) {
+			console.error('[pdf-image]', e);
+			alert('이미지 PDF 생성에 실패했습니다.');
+		} finally {
+			busy = '';
 		}
 	}
 </script>
@@ -42,7 +57,12 @@
 		<a href="/quotes/{quote.id}">← 돌아가기</a>
 		<div class="actions">
 			<button class="ghost" onclick={() => window.print()}>인쇄</button>
-			<button onclick={savePdf} disabled={pdfBusy}>{pdfBusy ? 'PDF 생성 중…' : 'PDF로 저장'}</button>
+			<button class="ghost" onclick={savePdfImage} disabled={!!busy}>
+				{busy === 'image' ? '생성 중…' : '이미지'}
+			</button>
+			<button onclick={savePdfVector} disabled={!!busy}>
+				{busy === 'vector' ? 'PDF 생성 중…' : 'PDF로 저장'}
+			</button>
 		</div>
 	</div>
 
