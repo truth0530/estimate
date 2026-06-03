@@ -33,7 +33,8 @@
 		"tailwindcss": "^4.3.0",
 		"typescript": "^6.0.2",
 		"vite": "^8.0.7",
-		"vitest": "^4.1.8"
+		"vitest": "^4.1.8",
+		"wrangler": "^4.97.0"
 	},
 	"dependencies": {
 		"exceljs": "^4.4.0",
