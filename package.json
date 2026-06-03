@@ -7,12 +7,20 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "svelte-kit sync || echo '' ; git config core.hooksPath .githooks 2>/dev/null || true",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest run",
 		"test:unit": "vitest run",
-		"test:e2e": "playwright test"
+		"test:e2e": "playwright test",
+		"ci": "npm run check && npm run test:unit && npm run test:e2e && npm run build",
+		"ci:fast": "npm run check && npm run test:unit",
+		"audit": "npm audit --omit=dev --audit-level=high",
+		"scan:secrets": "gitleaks detect --no-banner --redact",
+		"security": "npm run audit && npm run scan:secrets",
+		"verify": "npm run ci && npm run security",
+		"deploy": "npm run verify && wrangler pages deploy build --project-name estimate",
+		"hooks:install": "git config core.hooksPath .githooks"
 	},
 	"devDependencies": {
 		"@playwright/test": "^1.60.0",

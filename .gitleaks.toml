@@ -1,0 +1,20 @@
+# gitleaks 설정 — 커밋에 비밀키(.env, API 키, 토큰)가 섞이는 것을 막는다.
+# 기본 규칙 사용 + 오탐 줄이기용 allowlist.
+# 실행: npm run scan:secrets  (gitleaks 설치 필요: brew install gitleaks)
+
+title = "estimate secret scan"
+
+[extend]
+# gitleaks 내장 기본 규칙(수백 종) 사용
+useDefault = true
+
+[allowlist]
+description = "스캔 제외 경로 (산출물·잠금파일·테스트 픽스처)"
+paths = [
+	'''package-lock\.json''',
+	'''build/''',
+	'''node_modules/''',
+	'''static/icons/''',
+	# 견적 백업 JSON 등 사용자 데이터 산출물(있다면)
+	'''.*\.xlsx$'''
+]

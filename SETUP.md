@@ -69,6 +69,19 @@ supabase/migrations/0001_init.sql   운영 DB 스키마+RLS+RPC
 6. **최우선 검증**: `@supabase/ssr` 쿠키 인증이 Cloudflare Workers 엣지에서
    동작하는지 스모크 테스트. 충돌 시 `adapter-node`로 교체(PLAN.md §3-2).
 
+## 로컬 CI·보안·배포 (GitHub Actions 없이)
+
+검증은 내 기기에서, 배포는 수동(Kamal 방식). 상세: **[docs/ci-deploy.md](docs/ci-deploy.md)**
+
+```bash
+npm run verify     # check + 단위/E2E 테스트 + 빌드 + 보안스캔 (배포 전 게이트)
+npm run deploy     # verify 통과 시 Cloudflare Pages로 수동 배포
+```
+
+- `git push` 직전 `ci:fast`(타입검사+단위)가 훅으로 자동 실행(`.githooks/pre-push`).
+  활성화: `npm run hooks:install` (또는 `npm install`이 자동 설정).
+- 보안: `npm audit`(의존성, high↑ 차단) + `gitleaks`(비밀키, `brew install gitleaks`).
+
 ## 배포 — Cloudflare Pages (정적 SPA)
 
 이 앱은 순수 SPA(`ssr=false`)라 **`@sveltejs/adapter-static`** 으로 정적 빌드한다(설정 완료).

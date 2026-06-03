@@ -1,0 +1,14 @@
+#!/bin/sh
+# 로컬 게이트: push 전에 빠른 CI(타입검사 + 단위 테스트)를 돌린다.
+# GitHub Actions 대신 내 기기에서 검증한다 (Kamal 방식).
+# 더 무거운 전체 검증(e2e·빌드·보안)은 배포 전 `npm run verify`로 수동 실행.
+#
+# 활성화: 한 번만  ->  npm run hooks:install
+# 우회(긴급):       ->  git push --no-verify
+
+echo "▶ pre-push: npm run ci:fast"
+npm run ci:fast || {
+	echo "✗ ci:fast 실패 — push 중단. (우회: git push --no-verify)"
+	exit 1
+}
+echo "✓ ci:fast 통과"
