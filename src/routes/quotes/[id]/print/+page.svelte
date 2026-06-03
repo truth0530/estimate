@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { db } from '$lib/data/db.svelte';
 	import { won } from '$lib/money';
+	import { koreanAmount } from '$lib/korean-number';
 
 	const quote = $derived(db.getQuote(page.params.id ?? null));
 	const customer = $derived(quote ? db.getCustomer(quote.customer_id) : null);
@@ -83,6 +84,11 @@
 						{/each}
 					</tbody>
 				</table>
+
+				<div class="amount-words">
+					합계금액 <strong>{koreanAmount(quote.total_amount)}</strong>
+					<span class="num">(₩{won(quote.total_amount)})</span>
+				</div>
 
 				<div class="totals">
 					<div class="trow"><span>공급가액 합계</span><span class="num">{won(quote.supply_amount)}</span></div>
@@ -252,6 +258,22 @@
 	.c-price,
 	.c-amt,
 	.c-vat { width: 100px; text-align: right; }
+	.amount-words {
+		margin-top: 14px;
+		border: 1px solid #d4d4d8;
+		background: #fafafa;
+		padding: 10px 14px;
+		font-size: 14px;
+		color: #18181b;
+	}
+	.amount-words strong {
+		font-size: 16px;
+		font-weight: 700;
+	}
+	.amount-words .num {
+		color: #71717a;
+		margin-left: 6px;
+	}
 	.totals {
 		margin: 16px 0 0 auto;
 		width: 300px;

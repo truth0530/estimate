@@ -2,6 +2,7 @@
 // 병합·테두리·서식 적용 (DESIGN.md: SheetJS Community 대신 ExcelJS).
 
 import type { Company, Customer, Quote } from '$lib/types';
+import { koreanAmount } from '$lib/korean-number';
 
 export async function exportQuoteExcel(quote: Quote, company: Company | null, customer: Customer | null) {
 	const ExcelJS = (await import('exceljs')).default;
@@ -91,6 +92,16 @@ export async function exportQuoteExcel(quote: Quote, company: Company | null, cu
 		vc.font = { bold: i === 2, size: i === 2 ? 12 : 10 };
 		vc.border = border;
 	});
+
+	// 한글 금액 병기 행
+	const wordsRow = totalRow + labels.length;
+	ws.mergeCells(wordsRow, 1, wordsRow, 7);
+	const wc = ws.getCell(wordsRow, 1);
+	wc.value = koreanAmount(quote.total_amount);
+	wc.alignment = { horizontal: 'center' };
+	wc.font = { bold: true, size: 11 };
+	wc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFAFAFA' } };
+	wc.border = border;
 
 	const buf = await wb.xlsx.writeBuffer();
 	const blob = new Blob([buf], {
