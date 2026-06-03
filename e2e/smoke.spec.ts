@@ -21,6 +21,13 @@ test('작성 → 자동입력 → 저장 → 합계 계산', async ({ page }) =>
 	await expect(page.getByText('2,772,000').first()).toBeVisible();
 });
 
+test('빈 견적은 저장이 차단되고 안내가 뜬다', async ({ page }) => {
+	await page.goto('/quotes/new');
+	await page.getByRole('button', { name: '저장' }).click();
+	await expect(page).toHaveURL(/\/quotes\/new$/);
+	await expect(page.getByText('품목을 1개 이상 입력하세요.')).toBeVisible();
+});
+
 test('인쇄 미리보기는 모바일에서 가로 스크롤이 없다', async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
 	await createQuote(page, '시멘트 10포');

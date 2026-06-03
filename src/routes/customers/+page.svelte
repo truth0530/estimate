@@ -40,7 +40,9 @@
 		</div>
 		<div class="mt-2 flex gap-2">
 			<Button variant="secondary" onclick={() => (editing = null)} class="flex-1">취소</Button>
-			<Button variant="primary" onclick={save} class="flex-[2]">저장</Button>
+			<Button variant="primary" onclick={save} disabled={!editing.name.trim()} class="flex-[2]">
+				저장
+			</Button>
 		</div>
 	</div>
 {/if}

@@ -3,6 +3,7 @@
 	import { db, uid, todayISO } from '$lib/data/db.svelte';
 	import { lineAmount, computeTotals, won } from '$lib/money';
 	import { parseAutofill, type ParsedLine } from '$lib/autofill';
+	import { validateQuoteForSave } from '$lib/validation';
 	import type { Quote, QuoteStatus } from '$lib/types';
 	import { QUOTE_STATUS_LABEL } from '$lib/types';
 	import Button from './Button.svelte';
@@ -109,7 +110,15 @@
 		smartText = '';
 	}
 
+	let formError = $state('');
+
 	function save() {
+		const v = validateQuoteForSave(lines);
+		if (!v.ok) {
+			formError = v.error ?? '입력을 확인하세요.';
+			return;
+		}
+		formError = '';
 		const id = db.saveQuote({
 			id: existing?.id,
 			quote_number: existing?.quote_number,
@@ -118,7 +127,7 @@
 			valid_until: validUntil || null,
 			status,
 			notes,
-			lines
+			lines: v.lines
 		});
 		goto(`/quotes/${id}`);
 	}
@@ -133,6 +142,13 @@
 </datalist>
 
 <div class="pb-2">
+	{#if !db.company?.name}
+		<div class="mt-3 rounded border border-line bg-sunken px-3 py-2 text-[13px] text-muted">
+			회사 정보가 비어 있습니다. <a href="/settings" class="font-medium text-accent">설정</a>에서 입력하면
+			견적서에 반영됩니다.
+		</div>
+	{/if}
+
 	<!-- 메타: 거래처 / 발행일·유효기간·상태 (라벨 너비 통일, 날짜는 1줄 2열) -->
 	<section class="border-b border-line py-3">
 		<div class="flex items-center gap-3 py-1.5">
@@ -206,6 +222,8 @@
 							<input
 								type="number"
 								inputmode="decimal"
+								min="0"
+								step="any"
 								class="inp inp-num w-full"
 								bind:value={line.quantity}
 							/>
@@ -215,6 +233,7 @@
 							<input
 								type="number"
 								inputmode="numeric"
+								min="0"
 								class="inp inp-num w-full"
 								bind:value={line.unit_price}
 							/>
@@ -280,6 +299,9 @@
 <!-- 하단 고정: 합계 + 액션 (면 분리가 아니라 헤어라인) -->
 <div class="fixed inset-x-0 bottom-0 z-20 border-t border-line-strong bg-surface">
 	<div class="mx-auto max-w-3xl px-4">
+		{#if formError}
+			<div class="pt-2 text-[13px] text-rejected">{formError}</div>
+		{/if}
 		<div class="flex items-center justify-between py-2 text-[13px]">
 			<div class="flex gap-4 text-muted">
 				<span>공급가액 <span class="num text-text">{won(totals.supply)}</span></span>
