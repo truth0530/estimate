@@ -101,10 +101,62 @@
 						{/if}
 					</div>
 				{:else if mode === 'ios'}
-					<div class="mt-6 rounded-md border border-line bg-sunken px-4 py-3 text-left text-[14px] text-text">
-						사파리 하단/상단의 <span class="font-semibold">공유 아이콘</span>
-						<span class="inline-block align-middle text-accent">⬆︎</span> →
-						<span class="font-semibold">“홈 화면에 추가”</span>
+					<div class="mt-6 space-y-2 text-left">
+						<!-- 1단계: 공유 버튼 -->
+						<div class="flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3">
+							<span
+								class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sunken text-accent"
+							>
+								<!-- iOS 공유 아이콘 (상자 + 위 화살표) -->
+								<svg
+									width="20"
+									height="20"
+									viewBox="0 0 24 24"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="1.7"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path d="M12 14V3.5" />
+									<path d="M8.5 7 12 3.5 15.5 7" />
+									<path
+										d="M7 10H6.5A2.5 2.5 0 0 0 4 12.5v6A2.5 2.5 0 0 0 6.5 21h11a2.5 2.5 0 0 0 2.5-2.5v-6A2.5 2.5 0 0 0 17.5 10H17"
+									/>
+								</svg>
+							</span>
+							<div class="text-[14px] text-text">
+								<span class="font-semibold text-strong">1.</span> 사파리 도구막대의
+								<span class="font-semibold text-accent">공유</span> 버튼을 누르세요
+							</div>
+						</div>
+
+						<!-- 2단계: 공유 시트에서 "홈 화면에 추가" -->
+						<div class="rounded-xl border border-line bg-surface px-4 py-3 text-[14px] text-text">
+							<span class="font-semibold text-strong">2.</span> 목록을 내려
+							<span class="font-semibold text-strong">홈 화면에 추가</span>를 누르세요
+							<!-- 실제 공유 시트 항목 모양 -->
+							<div class="mt-2 flex items-center justify-between rounded-lg bg-sunken px-3 py-2.5">
+								<span class="text-[15px] font-medium text-strong">홈 화면에 추가</span>
+								<span
+									class="flex size-7 shrink-0 items-center justify-center rounded-md border border-line-strong text-strong"
+								>
+									<!-- 둥근 사각 + 플러스 -->
+									<svg
+										width="16"
+										height="16"
+										viewBox="0 0 24 24"
+										fill="none"
+										stroke="currentColor"
+										stroke-width="2"
+										stroke-linecap="round"
+									>
+										<rect x="3.5" y="3.5" width="17" height="17" rx="4.5" />
+										<path d="M12 8.5v7M8.5 12h7" />
+									</svg>
+								</span>
+							</div>
+						</div>
 					</div>
 				{/if}
 			{/if}
