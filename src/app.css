@@ -114,7 +114,8 @@
 		border-radius: var(--radius-DEFAULT);
 		background: var(--color-surface);
 		color: var(--color-strong);
-		font-size: 15px;
+		/* iOS는 16px 미만 입력에 포커스 시 화면을 확대한다 → 16px로 막는다 */
+		font-size: 16px;
 	}
 	.inp::placeholder {
 		color: var(--color-faint);
@@ -147,5 +148,15 @@
 	.inp-num {
 		text-align: right;
 		font-variant-numeric: tabular-nums;
+	}
+}
+
+/* 터치 기기 전반: 모든 입력칸 16px↑ 강제 → iOS 포커스 시 자동 확대 방지.
+   데스크톱(pointer: fine)은 영향 없음(표 셀 밀도 유지). */
+@media (pointer: coarse) {
+	input:not([type='checkbox']):not([type='radio']):not([type='file']),
+	select,
+	textarea {
+		font-size: 16px;
 	}
 }
