@@ -3,6 +3,7 @@
 	import { db } from '$lib/data/db.svelte';
 	import { won } from '$lib/money';
 	import { koreanAmount } from '$lib/korean-number';
+	import { exportQuotePdf } from '$lib/export/pdf';
 
 	const quote = $derived(db.getQuote(page.params.id ?? null));
 	const customer = $derived(quote ? db.getCustomer(quote.customer_id) : null);
@@ -14,6 +15,22 @@
 	let frameW = $state(0);
 	let sheetH = $state(1123);
 	const scale = $derived(frameW ? Math.min(1, frameW / A4W) : 1);
+
+	let sheetEl = $state<HTMLElement>();
+	let pdfBusy = $state(false);
+
+	async function savePdf() {
+		if (!sheetEl || !quote || pdfBusy) return;
+		pdfBusy = true;
+		try {
+			await exportQuotePdf(sheetEl, `견적서_${quote.quote_number}.pdf`);
+		} catch (e) {
+			console.error('[pdf]', e);
+			alert('PDF 생성에 실패했습니다. 다시 시도해 주세요.');
+		} finally {
+			pdfBusy = false;
+		}
+	}
 </script>
 
 <svelte:head><title>견적서 {quote?.quote_number ?? ''}</title></svelte:head>
@@ -23,11 +40,14 @@
 {:else}
 	<div class="toolbar">
 		<a href="/quotes/{quote.id}">← 돌아가기</a>
-		<button onclick={() => window.print()}>인쇄 / PDF로 저장</button>
+		<div class="actions">
+			<button class="ghost" onclick={() => window.print()}>인쇄</button>
+			<button onclick={savePdf} disabled={pdfBusy}>{pdfBusy ? 'PDF 생성 중…' : 'PDF로 저장'}</button>
+		</div>
 	</div>
 
 	<div class="frame" bind:clientWidth={frameW} style="height:{sheetH * scale}px">
-		<div class="sheet" bind:clientHeight={sheetH} style="transform:scale({scale})">
+		<div class="sheet" bind:this={sheetEl} bind:clientHeight={sheetH} style="transform:scale({scale})">
 			<!-- 헤더: 제목 + 공급자/공급받는자 -->
 			<header class="sheet-head">
 				<h1 class="title">견 적 서</h1>
@@ -132,6 +152,10 @@
 		font-size: 14px;
 		text-decoration: none;
 	}
+	.actions {
+		display: flex;
+		gap: 8px;
+	}
 	.toolbar button {
 		height: 40px;
 		padding: 0 16px;
@@ -141,6 +165,15 @@
 		color: #fff;
 		font-size: 14px;
 		cursor: pointer;
+	}
+	.toolbar button:disabled {
+		opacity: 0.5;
+		cursor: default;
+	}
+	.toolbar button.ghost {
+		background: transparent;
+		color: #3f3f46;
+		border: 1px solid #d4d4d8;
 	}
 
 	/* 화면: A4 시트를 프레임 폭에 맞게 축소. 프레임이 100%라 가로 스크롤이 없다. */
