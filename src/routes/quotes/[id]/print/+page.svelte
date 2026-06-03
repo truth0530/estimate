@@ -56,8 +56,15 @@
 				</div>
 			</header>
 
-			<!-- 본문: 품목 표 + 합계 (남는 높이를 흡수해 푸터를 하단으로 민다) -->
+			<!-- 본문: 합계금액(상단) + 품목 표 (남는 높이를 흡수해 푸터를 하단으로 민다) -->
 			<main class="sheet-body">
+				<!-- 합계금액을 표 상단에 — 최종 금액을 먼저 확인 (한국 견적/거래명세 트렌드) -->
+				<div class="amount-words">
+					<span class="aw-label">합계금액</span>
+					<strong>{koreanAmount(quote.total_amount)}</strong>
+					<span class="num">(₩{won(quote.total_amount)})</span>
+				</div>
+
 				<table class="lines">
 					<thead>
 						<tr>
@@ -84,11 +91,6 @@
 						{/each}
 					</tbody>
 				</table>
-
-				<div class="amount-words">
-					합계금액 <strong>{koreanAmount(quote.total_amount)}</strong>
-					<span class="num">(₩{won(quote.total_amount)})</span>
-				</div>
 
 				<div class="totals">
 					<div class="trow"><span>공급가액 합계</span><span class="num">{won(quote.supply_amount)}</span></div>
@@ -259,20 +261,30 @@
 	.c-amt,
 	.c-vat { width: 100px; text-align: right; }
 	.amount-words {
-		margin-top: 14px;
-		border: 1px solid #d4d4d8;
+		display: flex;
+		align-items: baseline;
+		gap: 10px;
+		margin: 0 0 12px;
+		border: 1px solid #18181b;
 		background: #fafafa;
-		padding: 10px 14px;
-		font-size: 14px;
+		padding: 12px 16px;
+		font-size: 15px;
 		color: #18181b;
 	}
+	.aw-label {
+		font-size: 12px;
+		font-weight: 600;
+		color: #71717a;
+	}
 	.amount-words strong {
-		font-size: 16px;
+		font-size: 18px;
 		font-weight: 700;
+		letter-spacing: -0.01em;
 	}
 	.amount-words .num {
+		margin-left: auto;
 		color: #71717a;
-		margin-left: 6px;
+		white-space: nowrap;
 	}
 	.totals {
 		margin: 16px 0 0 auto;
