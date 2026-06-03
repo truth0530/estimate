@@ -16,9 +16,9 @@ async function createQuote(page: import('@playwright/test').Page, text: string) 
 }
 
 test('작성 → 자동입력 → 저장 → 합계 계산', async ({ page }) => {
-	await createQuote(page, '이형철근 2톤, 시멘트 20포 8500원, 레미콘 5');
-	// 2,520,000(공급) + 252,000(세액) = 2,772,000
-	await expect(page.getByText('2,772,000').first()).toBeVisible();
+	await createQuote(page, '강마루 30㎡, LED평판등 12개, 실크벽지 10평');
+	// 1,650,000 + 384,000 + 450,000 = 2,484,000(공급) + 248,400(세액) = 2,732,400
+	await expect(page.getByText('2,732,400').first()).toBeVisible();
 });
 
 test('빈 견적은 저장이 차단되고 안내가 뜬다', async ({ page }) => {
@@ -30,7 +30,7 @@ test('빈 견적은 저장이 차단되고 안내가 뜬다', async ({ page }) =
 
 test('인쇄 미리보기는 모바일에서 가로 스크롤이 없다', async ({ page }) => {
 	await page.setViewportSize({ width: 390, height: 844 });
-	await createQuote(page, '시멘트 10포');
+	await createQuote(page, '강마루 10㎡');
 	const url = page.url();
 	await page.goto(`${url}/print`);
 	const overflow = await page.evaluate(
@@ -43,7 +43,7 @@ test('인쇄 미리보기는 모바일에서 가로 스크롤이 없다', async 
 });
 
 test('Excel·백업 파일 다운로드', async ({ page }) => {
-	await createQuote(page, '시멘트 10포');
+	await createQuote(page, '강마루 10㎡');
 
 	const [xlsx] = await Promise.all([
 		page.waitForEvent('download'),

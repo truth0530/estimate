@@ -19,7 +19,7 @@
 		"scan:secrets": "gitleaks detect --no-banner --redact",
 		"security": "npm run audit && npm run scan:secrets",
 		"verify": "npm run ci && npm run security",
-		"deploy": "npm run verify && wrangler pages deploy build --project-name estimate",
+		"deploy": "npm run verify && wrangler pages deploy build --project-name 6day --branch main --commit-dirty=true",
 		"hooks:install": "git config core.hooksPath .githooks"
 	},
 	"devDependencies": {

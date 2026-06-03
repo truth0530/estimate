@@ -21,10 +21,10 @@ npm run dev
 
 ## 검증된 동작 (Playwright로 실제 클릭/렌더 검증 완료)
 
-- 빠른 입력 "이형철근 2톤, 시멘트 20포 8500원, 레미콘 5" → 3개 라인 자동 채움
+- 빠른 입력 "강마루 30㎡, LED평판등 12개, 실크벽지 10평" → 3개 라인 자동 채움
   (품목 퍼지매칭, 수량/단위/단가 파싱, 입력단가 우선·DB단가 fallback)
 - 채번 202606-001 자동 생성(월별 YYYYMM-NNN)
-- 합계: 공급가액 2,520,000 / 세액 252,000(10% floor) / 합계 2,772,000
+- 합계: 공급가액 2,484,000 / 세액 248,400(10% floor) / 합계 2,732,400
 - Excel: 버튼 클릭 → `견적서_202606-001.xlsx` 다운로드, 유효한 Office Open XML
   (테두리·병합·셀서식 포함) 확인
 - 인쇄 견적서: 한글·로고·직인(dataURL `<img>`)·공급자/공급받는자·라인별 세액 렌더 확인
@@ -97,7 +97,7 @@ npm run build      # build/ 산출 (정적)
 ```bash
 npm i -D wrangler
 npx wrangler login                          # 브라우저로 Cloudflare 로그인(최초 1회)
-npx wrangler pages deploy build --project-name estimate
+npx wrangler pages deploy build --project-name 6day
 ```
 
 ### 방법 B — GitHub 연결 (자동 배포, 권장)
@@ -108,7 +108,7 @@ npx wrangler pages deploy build --project-name estimate
    - **Build command**: `npm run build`
    - **Build output directory**: `build`
    - Framework preset: SvelteKit(또는 None) — output을 `build`로만 맞추면 됨.
-4. 배포 후 발급된 `https://estimate-xxxx.pages.dev` 주소를 휴대폰 사파리/크롬에서 열고
+4. 배포 후 발급된 `https://6day.pages.dev` 주소를 휴대폰 사파리/크롬에서 열고
    **홈 화면에 추가** → PWA 설치(오프라인 작동).
 
 > SPA 딥링크는 `static/_redirects`(`/* /index.html 200`)가 처리한다.

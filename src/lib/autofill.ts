@@ -10,7 +10,12 @@ export interface ParsedLine extends Partial<QuoteLine> {
 	matched: boolean;
 }
 
-const UNIT_WORDS = ['개', '포대', '포', '장', '톤', 'ton', 't', 'm3', 'm³', 'm', 'ea', 'set', '세트', '박스', '롤', 'kg', 'g'];
+const UNIT_WORDS = [
+	'개', '포대', '포', '장', '톤', 'ton', 't',
+	// 인테리어/면적 단위
+	'㎡', 'm²', 'm2', 'm3', 'm³', '평', '자', '통', '롤', '박스', '세트', 'set', 'ea',
+	'm', 'kg', 'g'
+];
 
 /** "5만원", "50,000원", "단가 8000", "@8000" → 숫자 */
 function parsePrice(text: string): number | null {

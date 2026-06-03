@@ -74,8 +74,8 @@ npx wrangler login                # 브라우저로 Cloudflare 로그인 (최초
 npm run verify                    # 로컬 검증 (필수)
 npm run deploy                    # = verify 후 build/를 Cloudflare Pages로 업로드
 ```
-- 첫 배포 때 프로젝트가 자동 생성된다(이름 `estimate`, `package.json`의 deploy 스크립트).
-- 끝나면 `https://estimate-xxxx.pages.dev` 주소가 출력된다.
+- 첫 배포 때 프로젝트가 자동 생성된다(이름 `6day`, `package.json`의 deploy 스크립트).
+- 끝나면 `https://6day.pages.dev` 주소가 출력된다.
 
 ### 3-3. 휴대폰에 설치 (PWA)
 1. 휴대폰 브라우저(아이폰=사파리, 안드로이드=크롬)로 그 주소를 연다.

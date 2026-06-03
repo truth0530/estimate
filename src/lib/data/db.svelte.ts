@@ -33,8 +33,8 @@ function seed(): Snapshot {
 	const company: Company = {
 		id: uid(),
 		business_number: '123-45-67890',
-		name: '한빛엔지니어링',
-		ceo_name: '김상현',
+		name: '육일하우스',
+		ceo_name: '김영복',
 		address: '서울특별시 마포구 월드컵북로 12',
 		phone: '02-1234-5678',
 		logo_data: null,
@@ -52,10 +52,10 @@ function seed(): Snapshot {
 		memo: ''
 	};
 	const items: Item[] = [
-		{ id: uid(), name: '이형철근 SD400', spec: 'D13', unit: 'ton', unit_price: 980000, category: '철근', active: true },
-		{ id: uid(), name: '레미콘', spec: '25-24-150', unit: 'm³', unit_price: 78000, category: '콘크리트', active: true },
-		{ id: uid(), name: '시멘트', spec: '40kg', unit: '포', unit_price: 8500, category: '자재', active: true },
-		{ id: uid(), name: '거푸집 합판', spec: '12T', unit: '장', unit_price: 21000, category: '가설', active: true }
+		{ id: uid(), name: '강마루', spec: '친환경 8T', unit: '㎡', unit_price: 55000, category: '바닥재', active: true },
+		{ id: uid(), name: '실크벽지', spec: '도배 포함', unit: '평', unit_price: 45000, category: '벽지', active: true },
+		{ id: uid(), name: 'LED평판등', spec: '640각', unit: '개', unit_price: 32000, category: '조명', active: true },
+		{ id: uid(), name: '욕실타일', spec: '300×600', unit: '㎡', unit_price: 28000, category: '타일', active: true }
 	];
 	return { company, customers: [customer], items, quotes: [] };
 }
