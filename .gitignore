@@ -25,3 +25,9 @@ vite.config.ts.timestamp-*
 # verification artifacts (Playwright screenshots dropped at project root)
 .playwright-mcp/
 /*.png
+
+# test artifacts
+/test-results/
+/playwright-report/
+/blob-report/
+/.playwright/

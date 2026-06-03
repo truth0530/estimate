@@ -7,6 +7,7 @@
 
 import type { Company, Customer, Item, Quote, QuoteLine, QuoteStatus } from '../types';
 import { computeTotals, lineAmount } from '../money';
+import { nextQuoteNumber as computeQuoteNumber } from '../quote-number';
 
 const KEY = 'estimate-db-v1';
 
@@ -171,15 +172,12 @@ class Database {
 		return this.quotes.find((q) => q.id === id) ?? null;
 	}
 
-	/** 월별 채번 YYYYMM-NNN (로컬판 next_quote_number) */
+	/** 월별 채번 YYYYMM-NNN (로컬판 next_quote_number) — 로직은 순수함수로 분리 */
 	private nextQuoteNumber(issueDate: string): string {
-		const ym = issueDate.slice(0, 7).replace('-', ''); // YYYYMM
-		const seqs = this.quotes
-			.filter((q) => q.quote_number.startsWith(ym + '-'))
-			.map((q) => parseInt(q.quote_number.split('-')[1] ?? '0', 10))
-			.filter((n) => !isNaN(n));
-		const next = (seqs.length ? Math.max(...seqs) : 0) + 1;
-		return `${ym}-${String(next).padStart(3, '0')}`;
+		return computeQuoteNumber(
+			this.quotes.map((q) => q.quote_number),
+			issueDate
+		);
 	}
 
 	/** 원자적 저장 (로컬판 save_quote): 채번 + 라인 스냅샷 + 합계 재계산 */
