@@ -1,5 +1,6 @@
 // 견적서 Excel 내보내기 — ExcelJS 동적 import (버튼 클릭 시에만 로드).
-// 병합·테두리·서식 적용 (DESIGN.md: SheetJS Community 대신 ExcelJS).
+// 견적서 화면과 같은 내용·순서를 "편집 가능한 데이터"로 담는다(숫자는 실제 셀 값).
+// 시각 사본은 PDF가 담당하고, Excel은 셀에서 다시 계산·수정할 수 있는 버전이다.
 
 import type { Company, Customer, Quote } from '$lib/types';
 import { koreanAmount } from '$lib/korean-number';
@@ -8,100 +9,155 @@ export async function exportQuoteExcel(quote: Quote, company: Company | null, cu
 	const ExcelJS = (await import('exceljs')).default;
 	const wb = new ExcelJS.Workbook();
 	const ws = wb.addWorksheet('견적서', {
-		pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true }
+		pageSetup: { paperSize: 9, orientation: 'portrait', fitToPage: true, margins: { left: 0.5, right: 0.5, top: 0.6, bottom: 0.6, header: 0.3, footer: 0.3 } }
 	});
 
 	ws.columns = [
-		{ width: 5 },
-		{ width: 26 },
-		{ width: 12 },
-		{ width: 8 },
-		{ width: 14 },
-		{ width: 14 },
-		{ width: 12 }
+		{ width: 5 }, // A No
+		{ width: 26 }, // B 품명
+		{ width: 12 }, // C 규격
+		{ width: 8 }, // D 수량
+		{ width: 13 }, // E 단가
+		{ width: 14 }, // F 공급가액
+		{ width: 12 } // G 세액
 	];
 
-	const thin = { style: 'thin' as const, color: { argb: 'FFD4D4D8' } };
-	const border = { top: thin, left: thin, bottom: thin, right: thin };
+	const ink = 'FF18181B';
+	const line = 'FFD4D4D8';
+	const muted = 'FF71717A';
+	const sunken = 'FFFAFAFA';
+	const thin = { style: 'thin' as const, color: { argb: line } };
+	const box = { top: thin, left: thin, bottom: thin, right: thin };
+	const taxFree = company?.is_tax_free ?? false;
 
-	// 제목
+	// ── 제목 ──
 	ws.mergeCells('A1:G1');
 	const title = ws.getCell('A1');
-	title.value = '견 적 서';
-	title.font = { size: 20, bold: true };
+	title.value = '견  적  서';
+	title.font = { size: 22, bold: true, color: { argb: ink } };
 	title.alignment = { horizontal: 'center', vertical: 'middle' };
-	ws.getRow(1).height = 36;
+	ws.getRow(1).height = 40;
 
-	// 메타
-	ws.getCell('A3').value = `견적번호  ${quote.quote_number}`;
-	ws.getCell('A4').value = `발행일      ${quote.issue_date}`;
-	ws.getCell('E3').value = `공급자  ${company?.name ?? ''}`;
-	ws.getCell('E4').value = `사업자  ${company?.business_number ?? ''}`;
-	ws.getCell('A6').value = `공급받는자  ${customer?.name ?? ''} 귀하`;
-	ws.getCell('A6').font = { bold: true };
+	// ── 메타: 좌(견적정보) / 우(공급자) ──
+	const meta: Array<[string, string]> = [
+		[`견적번호   ${quote.quote_number}`, `공급자   ${company?.name ?? ''}`],
+		[`발행일      ${quote.issue_date}`, `사업자   ${company?.business_number ?? ''}`],
+		[`유효기간   ${quote.valid_until ?? '-'}`, `대표      ${company?.ceo_name ?? ''}`],
+		['', `주소      ${company?.address ?? ''}`]
+	];
+	meta.forEach(([left, right], i) => {
+		const r = 3 + i;
+		ws.mergeCells(r, 1, r, 3);
+		const lc = ws.getCell(r, 1);
+		lc.value = left;
+		lc.font = { size: 11, color: { argb: 'FF3F3F46' } };
+		ws.mergeCells(r, 5, r, 7);
+		const rc = ws.getCell(r, 5);
+		rc.value = right;
+		rc.font = { size: 11, bold: i === 0, color: { argb: i === 0 ? ink : 'FF3F3F46' } };
+	});
 
-	// 표 헤더
-	const headRow = 8;
+	// 공급받는자
+	ws.mergeCells('A8:D8');
+	const recv = ws.getCell('A8');
+	recv.value = `${customer?.name ?? ''} 귀하`;
+	recv.font = { size: 15, bold: true, color: { argb: ink } };
+	ws.getRow(8).height = 24;
+
+	// ── 합계금액 (한글) 상단 배너 ──
+	ws.mergeCells('A10:G10');
+	const band = ws.getCell('A10');
+	band.value = {
+		richText: [
+			{ text: '합계금액    ', font: { size: 11, color: { argb: muted } } },
+			{ text: koreanAmount(quote.total_amount), font: { size: 13, bold: true, color: { argb: ink } } },
+			{ text: `    (₩${quote.total_amount.toLocaleString('ko-KR')})`, font: { size: 11, color: { argb: muted } } }
+		]
+	};
+	band.alignment = { horizontal: 'left', vertical: 'middle' };
+	band.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: sunken } };
+	['A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10'].forEach((a) => (ws.getCell(a).border = box));
+	ws.getRow(10).height = 26;
+
+	// ── 품목 표 ──
+	const headRow = 12;
 	const heads = ['No', '품명', '규격', '수량', '단가', '공급가액', '세액'];
 	heads.forEach((h, i) => {
 		const cell = ws.getCell(headRow, i + 1);
 		cell.value = h;
-		cell.font = { bold: true, size: 10 };
+		cell.font = { bold: true, size: 10, color: { argb: ink } };
 		cell.alignment = { horizontal: 'center', vertical: 'middle' };
-		cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFAFAFA' } };
-		cell.border = border;
+		cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: sunken } };
+		cell.border = box;
 	});
+	ws.getRow(headRow).height = 20;
 
-	const taxFree = company?.is_tax_free ?? false;
 	quote.lines.forEach((l, idx) => {
 		const r = headRow + 1 + idx;
 		const vat = taxFree ? 0 : Math.floor(l.amount * 0.1);
-		const row = [idx + 1, l.item_name, l.spec, l.quantity, l.unit_price, l.amount, vat];
-		row.forEach((v, i) => {
+		const cells: Array<{ v: string | number; align?: 'center' | 'right'; num?: boolean }> = [
+			{ v: idx + 1, align: 'center' },
+			{ v: l.item_name },
+			{ v: l.spec },
+			{ v: l.quantity, align: 'right' },
+			{ v: l.unit_price, align: 'right', num: true },
+			{ v: l.amount, align: 'right', num: true },
+			{ v: vat, align: 'right', num: true }
+		];
+		cells.forEach((c, i) => {
 			const cell = ws.getCell(r, i + 1);
-			cell.value = v as never;
-			cell.border = border;
+			cell.value = c.v as never;
+			cell.border = box;
 			cell.font = { size: 10 };
-			if (i === 0) cell.alignment = { horizontal: 'center' };
-			if (i >= 3) {
-				cell.alignment = { horizontal: 'right' };
-				cell.numFmt = '#,##0';
-			}
+			if (c.align) cell.alignment = { horizontal: c.align, vertical: 'middle' };
+			if (c.num) cell.numFmt = '#,##0';
 		});
 	});
 
-	const totalRow = headRow + 1 + quote.lines.length;
-	const labels: Array<[string, number]> = [
-		['공급가액 합계', quote.supply_amount],
-		['세액 합계', quote.vat_amount],
-		['합계 금액', quote.total_amount]
-	];
-	labels.forEach(([label, val], i) => {
-		const r = totalRow + i;
+	// ── 합계 (공급가액·세액) ──
+	let r = headRow + 1 + quote.lines.length;
+	const totals: Array<[string, number]> = taxFree
+		? [['공급가액 합계', quote.supply_amount]]
+		: [
+				['공급가액 합계', quote.supply_amount],
+				['세액 합계', quote.vat_amount]
+			];
+	totals.forEach(([label, val]) => {
 		ws.mergeCells(r, 1, r, 5);
 		const lc = ws.getCell(r, 1);
 		lc.value = label;
-		lc.alignment = { horizontal: 'right' };
-		lc.font = { bold: i === 2, size: 10 };
-		lc.border = border;
+		lc.alignment = { horizontal: 'right', vertical: 'middle' };
+		lc.font = { size: 11, color: { argb: 'FF3F3F46' } };
+		lc.border = box;
 		ws.mergeCells(r, 6, r, 7);
 		const vc = ws.getCell(r, 6);
 		vc.value = val;
 		vc.numFmt = '#,##0';
-		vc.alignment = { horizontal: 'right' };
-		vc.font = { bold: i === 2, size: i === 2 ? 12 : 10 };
-		vc.border = border;
+		vc.alignment = { horizontal: 'right', vertical: 'middle' };
+		vc.font = { size: 11, color: { argb: ink } };
+		vc.border = box;
+		r++;
 	});
 
-	// 한글 금액 병기 행
-	const wordsRow = totalRow + labels.length;
-	ws.mergeCells(wordsRow, 1, wordsRow, 7);
-	const wc = ws.getCell(wordsRow, 1);
-	wc.value = koreanAmount(quote.total_amount);
-	wc.alignment = { horizontal: 'center' };
-	wc.font = { bold: true, size: 11 };
-	wc.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFAFAFA' } };
-	wc.border = border;
+	// ── 비고 ──
+	if (quote.notes) {
+		r += 1;
+		ws.mergeCells(r, 1, r, 7);
+		const n = ws.getCell(r, 1);
+		n.value = `비고   ${quote.notes}`;
+		n.font = { size: 10, color: { argb: 'FF3F3F46' } };
+		n.alignment = { wrapText: true, vertical: 'top' };
+		r++;
+	}
+
+	// ── 입금계좌 ──
+	if (company?.bank_account) {
+		r += 1;
+		ws.mergeCells(r, 1, r, 7);
+		const bk = ws.getCell(r, 1);
+		bk.value = `입금계좌   ${company.bank_account}`;
+		bk.font = { size: 10, color: { argb: 'FF3F3F46' } };
+	}
 
 	const buf = await wb.xlsx.writeBuffer();
 	const blob = new Blob([buf], {
