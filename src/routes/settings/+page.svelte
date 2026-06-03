@@ -146,8 +146,6 @@
 	</div>
 </section>
 
-<div class="fixed inset-x-0 bottom-0 border-t border-line-strong bg-surface">
-	<div class="mx-auto max-w-3xl px-4 py-3">
-		<Button variant="primary" onclick={save} class="w-full">저장</Button>
-	</div>
+<div class="mt-4 border-t border-line-strong pt-4">
+	<Button variant="primary" onclick={save} class="w-full">저장</Button>
 </div>

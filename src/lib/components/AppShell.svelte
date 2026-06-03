@@ -19,10 +19,9 @@
 	const path = $derived(page.url.pathname);
 	const isPrint = $derived(path.endsWith('/print'));
 	const isLogin = $derived(path === '/login');
-	// 자체 하단 액션바를 가진 폼 화면에서는 독바를 숨긴다 (이중 고정바 방지)
-	const isForm = $derived(
-		path === '/quotes/new' || /\/quotes\/[^/]+\/edit$/.test(path) || path === '/settings'
-	);
+	// 자체 하단 액션바를 가진 폼 화면에서는 독바를 숨긴다 (이중 고정바 방지).
+	// 설정은 목적지 화면이라 독바를 유지한다(빠져나갈 길 확보) — 저장은 인라인 버튼.
+	const isForm = $derived(path === '/quotes/new' || /\/quotes\/[^/]+\/edit$/.test(path));
 	const showDock = $derived(!isPrint && !isLogin && !isForm);
 </script>
 

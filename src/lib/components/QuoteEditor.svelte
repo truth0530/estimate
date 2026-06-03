@@ -297,7 +297,10 @@
 </div>
 
 <!-- 하단 고정: 합계 + 액션 (면 분리가 아니라 헤어라인) -->
-<div class="fixed inset-x-0 bottom-0 z-20 border-t border-line-strong bg-surface">
+<div
+	class="fixed inset-x-0 bottom-0 z-20 border-t border-line-strong bg-surface"
+	style="padding-bottom: env(safe-area-inset-bottom);"
+>
 	<div class="mx-auto max-w-3xl px-4">
 		{#if formError}
 			<div class="pt-2 text-[13px] text-rejected">{formError}</div>
