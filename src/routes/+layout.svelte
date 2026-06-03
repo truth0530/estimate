@@ -2,6 +2,7 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.svg';
 	import AppShell from '$lib/components/AppShell.svelte';
+	import InstallGate from '$lib/components/InstallGate.svelte';
 
 	let { children } = $props();
 </script>
@@ -14,3 +15,5 @@
 <AppShell>
 	{@render children()}
 </AppShell>
+
+<InstallGate />

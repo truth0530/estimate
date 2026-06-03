@@ -3,6 +3,41 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+
+		<!-- 카카오톡 등 인앱 브라우저에서 외부 브라우저로 강제 (PWA·저장 안정성). 부팅 전 실행 -->
+		<script>
+			(function () {
+				try {
+					var ua = navigator.userAgent || '';
+					var url = location.href;
+					if (/KAKAOTALK/i.test(ua)) {
+						// 카카오톡: 외부 기본 브라우저로 열기
+						location.href = 'kakaotalk://web/openExternal?url=' + encodeURIComponent(url);
+					} else if (/Line\//i.test(ua)) {
+						location.href = url + (url.indexOf('?') > -1 ? '&' : '?') + 'openExternalBrowser=1';
+					}
+					// 그 외 인앱(인스타·네이버·페북 등)은 InstallGate가 "외부 브라우저로 열기" 안내를 띄운다.
+				} catch (e) {}
+			})();
+		</script>
+
+		<!-- 링크 미리보기 (Open Graph / Twitter) -->
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="육일하우스 견적서" />
+		<meta property="og:title" content="육일하우스 견적서" />
+		<meta
+			property="og:description"
+			content="모바일에서 견적서를 작성하고 PDF·Excel로 출력하는 앱"
+		/>
+		<meta property="og:image" content="https://6day.pages.dev/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:url" content="https://6day.pages.dev/" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="육일하우스 견적서" />
+		<meta name="twitter:description" content="모바일 견적서 작성·PDF/Excel 출력" />
+		<meta name="twitter:image" content="https://6day.pages.dev/og.png" />
+
 		<link
 			rel="stylesheet"
 			as="style"
