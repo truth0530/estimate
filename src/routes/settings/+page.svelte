@@ -3,6 +3,8 @@
 	import type { Company } from '$lib/types';
 	import Field from '$lib/components/Field.svelte';
 	import Button from '$lib/components/Button.svelte';
+	import { compressImage } from '$lib/image';
+	import { formatBytes, daysSince, lastBackupLabel } from '$lib/format';
 
 	function current(): Company {
 		return (
@@ -23,20 +25,18 @@
 	let form = $state<Company>({ ...current() });
 	let saved = $state(false);
 
-	function readImage(file: File, set: (d: string) => void) {
-		const reader = new FileReader();
-		reader.onload = () => set(reader.result as string);
-		reader.readAsDataURL(file);
-	}
-	function onLogo(e: Event) {
+	// 업로드 이미지는 리사이즈·압축해 localStorage 용량 잠식을 막는다.
+	async function onLogo(e: Event) {
 		const f = (e.target as HTMLInputElement).files?.[0];
-		if (f) readImage(f, (d) => (form.logo_data = d));
+		if (f) form.logo_data = await compressImage(f, 512);
 	}
-	function onStamp(e: Event) {
+	async function onStamp(e: Event) {
 		const f = (e.target as HTMLInputElement).files?.[0];
-		if (f) readImage(f, (d) => (form.stamp_data = d));
+		if (f) form.stamp_data = await compressImage(f, 400);
 	}
 	let backupMsg = $state('');
+	const usage = $derived(db.usageBytes());
+	const backupDays = $derived(daysSince(db.lastBackupAt, Date.now()));
 
 	function exportBackup() {
 		const json = db.exportSnapshot();
@@ -129,6 +129,12 @@
 		현재 데이터는 이 브라우저에만 저장됩니다. 주기적으로 내보내 보관하고, 다른 기기로 옮길 때
 		내보낸 파일을 가져오세요.
 	</p>
+	<div class="flex items-center justify-between pb-2 text-[12px]">
+		<span class={backupDays === null || backupDays >= 7 ? 'text-rejected' : 'text-muted'}>
+			{lastBackupLabel(backupDays)}
+		</span>
+		<span class="num text-faint">저장 사용량 {formatBytes(usage)}</span>
+	</div>
 	<div class="flex gap-2 pb-2">
 		<Button variant="secondary" onclick={exportBackup} class="flex-1">내보내기 (.json)</Button>
 		<label

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import { db } from '$lib/data/db.svelte';
 	let { children } = $props();
 
 	const nav = [
@@ -34,6 +35,17 @@
 				<a href="/" class="text-[15px] font-semibold tracking-tight text-strong">견적서</a>
 			</div>
 		</header>
+
+		{#if db.saveError}
+			<div class="border-b border-rejected/30 bg-rejected/5 px-4 py-2">
+				<div class="mx-auto flex max-w-3xl items-start gap-3 text-[13px] text-rejected">
+					<span class="flex-1">{db.saveError}</span>
+					<button class="shrink-0 font-medium hover:underline" onclick={() => (db.saveError = null)}>
+						닫기
+					</button>
+				</div>
+			</div>
+		{/if}
 
 		<main class="mx-auto max-w-3xl px-4 {showDock ? 'pb-24' : 'pb-28'}">
 			{@render children()}

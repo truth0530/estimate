@@ -10,6 +10,8 @@ import { computeTotals, lineAmount } from '../money';
 import { nextQuoteNumber as computeQuoteNumber } from '../quote-number';
 
 const KEY = 'estimate-db-v1';
+const BACKUP_KEY = 'estimate-last-backup';
+const BACKUP_VERSION = 1;
 
 interface Snapshot {
 	company: Company | null;
@@ -86,12 +88,15 @@ class Database {
 		this.customers = snap.customers ?? [];
 		this.items = snap.items ?? [];
 		this.quotes = snap.quotes ?? [];
+		this.lastBackupAt = localStorage.getItem(BACKUP_KEY);
 		this.ready = true;
 		if (!raw) this.persist();
 	}
 
 	/** 마지막 저장 오류(용량 초과 등). UI가 읽어 사용자에게 알릴 수 있다. */
 	saveError = $state<string | null>(null);
+	/** 마지막 백업 시각(ISO). 설정 화면에서 환기용으로 표시. */
+	lastBackupAt = $state<string | null>(null);
 
 	private persist() {
 		if (typeof localStorage === 'undefined') return;
@@ -277,26 +282,35 @@ class Database {
 	   로컬 모드의 백업 부재를 해결하고, 백엔드 동기화 전까지
 	   기기 간 수동 이전(폰에서 내보내기 → 데스크톱에서 가져오기)을 가능하게 한다. */
 	exportSnapshot(): string {
+		const now = new Date().toISOString();
 		const snap: Snapshot & { _v: number; _exportedAt: string } = {
-			_v: 1,
-			_exportedAt: new Date().toISOString(),
+			_v: BACKUP_VERSION,
+			_exportedAt: now,
 			company: this.company,
 			customers: this.customers,
 			items: this.items,
 			quotes: this.quotes
 		};
-		return JSON.stringify(snap, null, 2);
+		const json = JSON.stringify(snap, null, 2);
+		// 내보내기 = 백업 완료로 기록(환기용)
+		this.lastBackupAt = now;
+		if (typeof localStorage !== 'undefined') localStorage.setItem(BACKUP_KEY, now);
+		return json;
 	}
 
 	importSnapshot(json: string): { ok: boolean; error?: string } {
-		let snap: Snapshot;
+		let snap: (Snapshot & { _v?: number }) | null;
 		try {
-			snap = JSON.parse(json) as Snapshot;
+			snap = JSON.parse(json) as Snapshot & { _v?: number };
 		} catch {
 			return { ok: false, error: 'JSON 형식이 아닙니다.' };
 		}
 		if (!snap || typeof snap !== 'object' || !Array.isArray(snap.quotes)) {
 			return { ok: false, error: '견적 백업 파일이 아닙니다.' };
+		}
+		// 버전 처리: 미래 버전은 거부, 그 외(미표기=초기) 수용
+		if (typeof snap._v === 'number' && snap._v > BACKUP_VERSION) {
+			return { ok: false, error: '더 최신 버전의 백업 파일입니다. 앱을 업데이트하세요.' };
 		}
 		this.company = snap.company ?? null;
 		this.customers = snap.customers ?? [];
@@ -304,6 +318,17 @@ class Database {
 		this.quotes = snap.quotes ?? [];
 		this.persist();
 		return { ok: true };
+	}
+
+	/** 현재 저장 사용량(바이트, 근사) — 용량 경고용 */
+	usageBytes(): number {
+		const snap: Snapshot = {
+			company: this.company,
+			customers: this.customers,
+			items: this.items,
+			quotes: this.quotes
+		};
+		return JSON.stringify(snap).length;
 	}
 
 	helpers = { uid, todayISO };
