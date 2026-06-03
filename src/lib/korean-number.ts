@@ -1,6 +1,7 @@
-// 숫자 → 한글 금액 (견적서 "일금 …원정" 표기). 순수 함수.
-// 규칙: 4자리 그룹마다 만/억/조 단위를 붙이고, 그룹 내 십/백/천의 '일'은 생략한다.
-//  예) 2,772,000 → "이백칠십칠만이천"
+// 숫자 → 한글 금액 (견적서 "금 …원" 표기, 국립국어원 기준). 순수 함수.
+// 규칙: 4자리 그룹마다 만/억/조 단위를 붙인다.
+// 위변조 방지를 위해 숫자 1도 항상 '일'로 적는다(일천·일백·일십).
+//  예) 452,100 → "사십오만이천일백", 2,772,000 → "이백칠십칠만이천"
 
 const DIGITS = ['영', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
 const SMALL = ['', '십', '백', '천']; // 그룹 내 자리
@@ -13,9 +14,8 @@ function readGroup(n: number): string {
 	for (let pos = 3; pos >= 0; pos--) {
 		const digit = d[pos];
 		if (digit === 0) continue;
-		if (pos === 0) s += DIGITS[digit];
-		else if (digit === 1) s += SMALL[pos]; // 십/백/천 — '일' 생략
-		else s += DIGITS[digit] + SMALL[pos];
+		// 위변조 방지: 십/백/천 앞의 1도 '일'을 살린다 (일십·일백·일천)
+		s += DIGITS[digit] + SMALL[pos];
 	}
 	return s;
 }
@@ -38,7 +38,7 @@ export function numberToKorean(value: number): string {
 	return s;
 }
 
-/** 견적서 표기: "일금 이백칠십칠만이천원정" */
+/** 견적서 표기: "금 사십오만이천일백원" (국립국어원 기준) */
 export function koreanAmount(value: number): string {
-	return `일금 ${numberToKorean(value)}원정`;
+	return `금 ${numberToKorean(value)}원`;
 }

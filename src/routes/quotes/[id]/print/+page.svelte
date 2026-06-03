@@ -92,10 +92,10 @@
 					</tbody>
 				</table>
 
+				<!-- 하단은 세금 분해 내역만 (합계 금액은 상단 한글 금액으로 표기) -->
 				<div class="totals">
 					<div class="trow"><span>공급가액 합계</span><span class="num">{won(quote.supply_amount)}</span></div>
 					{#if !taxFree}<div class="trow"><span>세액 합계</span><span class="num">{won(quote.vat_amount)}</span></div>{/if}
-					<div class="trow grand"><span>합계 금액</span><span class="num">{won(quote.total_amount)} 원</span></div>
 				</div>
 
 				{#if quote.notes}
@@ -297,12 +297,8 @@
 		border-bottom: 1px solid #e4e4e7;
 		font-size: 14px;
 	}
-	.trow.grand {
+	.trow:last-child {
 		border-bottom: 0;
-		border-top: 2px solid #18181b;
-		margin-top: 2px;
-		font-weight: 700;
-		font-size: 17px;
 	}
 	.notes {
 		margin-top: 22px;

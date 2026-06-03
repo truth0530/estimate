@@ -38,8 +38,8 @@ test('인쇄 미리보기는 모바일에서 가로 스크롤이 없다', async 
 	);
 	expect(overflow).toBe(false);
 	await expect(page.getByText('견 적 서')).toBeVisible();
-	// 한글 금액 병기 ("일금 …원정")
-	await expect(page.getByText(/일금 .+원정/)).toBeVisible();
+	// 한글 금액 병기 ("금 …원", 국립국어원 기준)
+	await expect(page.getByText(/금 [가-힣]+원/)).toBeVisible();
 });
 
 test('Excel·백업 파일 다운로드', async ({ page }) => {
