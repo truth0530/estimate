@@ -12,7 +12,10 @@ npm run dev
 
 - `/` 견적 목록 · `/quotes/new` 작성(빠른 입력 자동완성 포함) · `/quotes/[id]` 상세
 - `/quotes/[id]/print` 인쇄·PDF(브라우저 "PDF로 저장") · 상세에서 Excel 내보내기
-- `/items` 품목 · `/customers` 거래처 · `/settings` 회사정보/로고/직인/면세
+- `/items` 품목 · `/customers` 거래처 · `/settings` 회사정보/로고/직인/면세 + **데이터 백업(JSON)**
+
+데이터 백업: 설정 화면에서 **내보내기(.json)** 로 보관하고, 다른 기기에서는 **가져오기** 로 옮긴다
+(백엔드 동기화 전까지의 수동 백업·이전 수단).
 
 데이터 초기화: 브라우저 콘솔에서 `localStorage.clear()` 후 새로고침.
 
@@ -27,6 +30,14 @@ npm run dev
 - 인쇄 견적서: 한글·로고·직인(dataURL `<img>`)·공급자/공급받는자·라인별 세액 렌더 확인
 - 모바일(390px): 인쇄 견적서가 A4 비율 그대로 화면폭에 축소되어 **가로 스크롤 0**(scrollWidth=clientWidth)
 - 하단 독바 4탭, 폼 화면에서는 독바 숨김(자체 액션바와 이중 고정 방지)
+- 설정 화면 JSON 내보내기 → 유효한 백업 파일(회사·거래처·품목·견적 전체) 확인
+
+## 백엔드 결정 상태 (요약, 상세는 PLAN.md §0.1)
+
+프론트엔드 SvelteKit은 확정(거의 최적). **백엔드는 아직 미확정** — 현재는 로컬 우선 +
+JSON 백업으로 운영하며, 기기 간 동기화가 실제로 필요해질 때 연결한다. 그때 SPA를 유지하는
+**Supabase가 보류 가능한 기본값**(7일 정지만 keepalive로 처리), 정지가 거슬리면 PocketBase,
+Postgres 고유 기능이 필요하면 Supabase 확정. 어느 쪽이든 데이터 어댑터 교체만으로 화면 코드는 유지된다.
 
 ## 구조
 
@@ -35,7 +46,7 @@ src/lib/
   types.ts            도메인 타입 (PLAN.md 스키마 대응)
   money.ts            금액 계산 규칙 (floor, VAT 10%)
   autofill.ts         빠른 입력 파서 (Fuse.js + 정규식)
-  data/db.svelte.ts   로컬 어댑터 (localStorage, 반응형 싱글턴)
+  data/db.svelte.ts   로컬 어댑터 (localStorage, 반응형 싱글턴) + JSON export/import
   export/excel.ts     ExcelJS 내보내기 (동적 import)
   components/         AppShell, Button, Field, StatusDot, QuoteEditor
 src/routes/          화면 (목록/작성/상세/수정/인쇄/거래처/품목/설정/로그인)

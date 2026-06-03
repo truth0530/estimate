@@ -133,20 +133,29 @@ components:
     layout: "dot(6px) + label(gap 6px)"
     typography: "{typography.label}"
     textColor: "{colors.text}"
-    dotColor: "{colors.status-*}"   # 상태에 따라 status-draft/sent/accepted/rejected
+    dotColor: "{colors.status-*}"   # draft/sent/accepted/rejected/canceled
+    canceled: "레이블에 line-through 병기해 draft와 구분"
   list-row:                         # 견적/거래처/품목 목록의 기본 단위 (카드 아님)
     borderBottom: "1px solid {colors.border}"
     padding: "{spacing.row-padding-y} {spacing.container-padding}"
     minHeight: 56px
-  line-item-row:                    # 견적 작성 화면 품목 입력 행 (카드 블록 금지)
+  line-item-row:                    # 견적 작성 품목 행 — 행별 뷰어/편집 모드
     borderBottom: "1px solid {colors.border}"
-    padding: "{spacing.row-padding-y} 0px"
-    mobileLayout: "fields-stacked"  # 품명/규격/수량/단가/금액 입력은 세로로 쌓는다
-    desktopLayout: "fields-inline"  # 넓은 뷰포트에서만 한 행 다중 칼럼 허용
+    viewerMode: "compact-text"      # 기본: 품명·규격 + (수량×단가) + 금액 + [수정][×] 한 줄
+    editMode: "expanded-inputs"     # 수정 클릭 시만: 품명 한 줄 + (수량|단가|금액) 한 줄, surface-sunken 음영
+    rationale: "항목이 늘어도 스크롤이 커지지 않도록 입력란은 편집 중인 행에만 노출"
   totals-bar:                       # 하단 합계 — 면이 아니라 상단 헤어라인으로 분리
     backgroundColor: "{colors.surface}"
     borderTop: "1px solid {colors.border-strong}"
     padding: "{spacing.sm} {spacing.container-padding}"
+  dock-nav:                         # 하단 고정 탭 (상단 탭 대체)
+    position: "fixed bottom, full-width"
+    borderTop: "1px solid {colors.border}"
+    items: "견적/거래처/품목/설정 — 모노크롬 라인 아이콘 + 레이블"
+    activeColor: "{colors.text-strong}"
+    inactiveColor: "{colors.text-faint}"
+    hiddenOn: "폼·인쇄 화면 (자체 하단 액션바와 이중 고정 방지)"
+    safeArea: "padding-bottom: env(safe-area-inset-bottom)"
 ---
 
 ## Overview
@@ -177,9 +186,10 @@ components:
 
 - **단일 흰 배경:** 배경과 카드의 색 대비로 영역을 나누지 않는다. 모든 구분은 `border`가 담당한다.
 - **List Row (최소 높이 56px):** 견적·거래처·품목 목록의 기본 단위. 좌측에 핵심 정보, 우측에 금액/상태를 두고 사이는 늘어나는 여백(`flex`)으로 채운다.
-- **Sticky 하단 영역:**
+- **하단 독바(DockNav):** 전역 내비게이션은 상단 탭이 아니라 **하단 고정 독바**(견적/거래처/품목/설정)로 둔다. 모노크롬 라인 아이콘 + 레이블, 활성은 잉크·비활성은 faint, 상단 헤어라인으로 본문과 분리한다. 단, **자체 하단 액션바를 가진 폼·인쇄 화면에서는 독바를 숨겨** 이중 고정 바를 방지한다.
+- **Sticky 하단 영역(폼 화면):**
   - **TotalsBar:** 작성 중 합계를 항상 보이도록 하단에 고정한다. 면 분리가 아니라 상단 헤어라인 한 줄로 본문과 나눈다.
-  - **ActionBar:** 저장·출력 액션을 하단 최외곽에 고정한다. TotalsBar와 합쳐 2단 고정 영역을 이루되, 본문 스크롤 영역의 높이를 침범하지 않도록 고정 영역 높이만큼 본문 하단 패딩을 확보한다.
+  - **ActionBar:** 저장·출력 액션을 하단 최외곽에 고정한다. TotalsBar와 합쳐 2단 고정 영역을 이루되, 본문 스크롤 영역의 높이를 침범하지 않도록 고정 영역 높이만큼 본문 하단 패딩을 확보한다. 폼 화면에서는 이 액션바가 독바를 대체한다.
 - **스크롤 최소화:** 한 화면에서 끝낼 수 있는 폼은 세로로 길게 늘이지 않는다. 읽기 전용 정보 행은 라벨을 좌측 정렬하고 관련 항목을 한 행에 묶어 높이를 줄인다. 단, 라벨이 긴 한글(사업자등록번호·공급받는자 상호 등)이면 좌측 라벨이 입력 폭을 침범하지 않도록 라벨 열 너비를 고정하고 나머지를 입력에 할당한다.
 - **카드 없음 ≠ 세로 쌓기 없음:** 카드 최소화는 정보를 박스로 감싸 부풀리지 말라는 뜻이지, 모든 것을 한 행에 욱여넣으라는 뜻이 아니다. 특히 **편집 가능한 다중 필드(견적 품목 입력: 품명·규격·수량·단가·금액)는 좁은 모바일에서 세로로 쌓는다.** 입력 중인 텍스트는 ellipsis로 줄일 수 없으므로, 5개 입력을 한 행에 평평하게 두면 가로 스크롤이나 줄바꿈으로 레이아웃이 깨진다. 박스·그림자·패딩 패널 없이 헤어라인으로만 항목을 구분하면 카드 최소화와 무파손을 동시에 만족한다.
 - **제약 충돌 시 우선순위:** "스크롤 최소화(밀도)"와 "줄바꿈/레이아웃 무파손"이 부딪히면 **무파손이 항상 우선한다.** 밀도를 위해 한 행에 묶다가 깨질 위험이 있으면 세로로 쌓는다.
@@ -202,12 +212,12 @@ components:
 
 ## Components
 
-- **button-primary / button-secondary:** 높이 44px로 터치 최소 규격을 지킨다. 보조 버튼은 배경색 대신 테두리로 구분해 화면의 색 부담을 줄인다.
-- **button-ghost:** 행 안의 인라인 동작(수정·삭제). 배경·테두리 없이 텍스트만으로 동작한다.
-- **input-field:** 헤어라인 테두리, 포커스 시 잉크 테두리로 상태를 알린다. 채워진 색 배경을 쓰지 않는다.
-- **status-indicator:** 6px 점 + 텍스트 레이블. 색 배경 알약을 대체하며, 점 색은 상태별 `status-*`를 따른다.
+- **button (primary/secondary/ghost/danger):** 높이 44px로 터치 최소 규격을 지킨다. primary는 잉크 면, secondary·danger는 배경색 대신 테두리로 구분(danger는 글자만 위험색), ghost는 행 내 인라인 동작(수정·삭제)으로 배경·테두리 없이 텍스트만 쓴다.
+- **input-field:** 헤어라인 테두리, 포커스 시 잉크 테두리로 상태를 알린다. 채워진 색 배경을 쓰지 않는다. 표 안 무테 변형(`inp-cell`)은 격자만으로 구분한다.
+- **status-indicator:** 6px 점 + 텍스트 레이블. 색 배경 알약을 대체하며, 점 색은 상태별 `status-*`를 따른다. `canceled`는 draft와 구분되도록 레이블에 line-through를 병기한다.
+- **dock-nav:** 하단 고정 탭. 모노크롬 라인 아이콘 + 레이블(이모지 아님), 활성=잉크/비활성=faint, 상단 헤어라인. 폼·인쇄 화면에서는 숨긴다.
 - **list-row:** 견적·거래처·품목 **목록(읽기 전용)**의 기본 단위. 좌측 텍스트 + 우측 금액/상태를 한 행에 두고 헤어라인으로 구분한다. 카드로 감싸지 않는다.
-- **line-item-row:** 견적 작성 화면의 **품목 입력(편집)** 단위. 카드로 감싸지 않되, 입력 필드는 모바일에서 세로로 쌓고 항목 사이를 헤어라인으로 구분한다(가로 다중 칼럼은 넓은 뷰포트에서만).
+- **line-item-row (뷰어/편집 모드):** 견적 작성 화면의 품목 행. **기본은 컴팩트 텍스트 뷰**(품명·규격, `수량×단가`, 금액, [수정][×]) — 항목이 많아도 한 줄씩이라 스크롤이 폭증하지 않는다. **[수정]을 누른 행만** 입력란으로 펼쳐지고(`surface-sunken` 음영으로 편집 중 표시: 품명 한 줄 + 수량·단가·금액 한 줄), [완료]로 다시 접힌다. 새 행·빈 행은 편집 모드로 시작하고, 빈 채로 완료하면 제거된다. 합계는 접힘 여부와 무관하게 전 행을 실시간 합산한다.
 
 ## Do's and Don'ts
 
@@ -218,6 +228,7 @@ components:
 - **Do:** 한 행에 가변 텍스트(좌)와 고정폭 숫자/상태(우)를 함께 둘 때, 숫자 영역은 `flex-shrink: 0`으로 고정하고 텍스트 영역만 `flex: 1; min-width: 0`으로 줄어들게 한다.
 - **Do:** 금액/수량 입력창에 `inputmode="decimal"` 또는 `inputmode="numeric"`을 넣어 모바일 숫자 키패드를 띄운다.
 - **Do:** 인쇄 화면(`/quotes/[id]/print`)은 다중 페이지 대응으로 `thead`에 `display: table-header-group`, `tr`에 `break-inside: avoid`를 선언한다.
+- **Do:** 인쇄 시트는 A4 비율(210:297)을 기준으로 **헤더(상단)·본문(`flex:1`)·푸터(하단 고정)** 3영역으로 구성해 종이를 채운다. 화면 미리보기에서는 시트를 794px(A4@96dpi)로 두고 프레임 폭에 맞춰 `transform: scale()`로 통째로 축소해 **모바일 가로 스크롤을 없앤다**(인쇄 시 스케일 해제, `@page { size: A4 }`로 실제 A4 출력).
 - **Do:** 로고·직인 등 비공개 storage 이미지는 Base64 dataURL 또는 signed URL로 변환해 브라우저와 PDF 엔진이 동일하게 렌더링하도록 한다.
 
 ### Don'ts
@@ -230,3 +241,19 @@ components:
 - **Don't:** 불필요하게 세로로 긴 폼으로 스크롤을 유발하지 않는다. 라벨은 입력 위가 아니라 좌측에 두고, 관련 입력은 한 행에 묶어 화면 밀도를 높인다.
 - **Don't:** 그림자와 그라데이션으로 깊이를 만들지 않는다. 구분은 헤어라인으로 충분하다.
 - **Don't:** 상태·액션을 색만으로 구별하지 않는다. 텍스트 레이블을 항상 병기해 접근성을 지킨다.
+
+## 구현 현황 (Implementation, 2026-06-03)
+
+이 디자인 시스템은 코드로 구현되어 검증됐다. 스펙과 구현이 어긋난 부분은 아래로 일치시켰다.
+
+**토큰의 출처:** 위 frontmatter의 색·타이포·라운드·간격은 [`src/app.css`](src/app.css)의 Tailwind v4 `@theme` 블록으로 코드화되어 유틸리티(`bg-ink`, `text-muted`, `border-line`, `rounded` 등)로 생성된다. 본문 폰트 Pretendard는 CDN의 dynamic-subset로 로드한다. 입력 공통 클래스(`.inp`, `.inp-cell`, `.inp-num`)와 숫자 정렬(`.num`)·truncation(`.truncate-cell`) 유틸도 같은 파일에 있다.
+
+**구현된 컴포넌트:** `AppShell`(상단 슬림 헤더 + 하단 독바), `Button`(primary/secondary/ghost/danger), `Field`(좌측 라벨 행), `StatusDot`, `QuoteEditor`(뷰어/편집 모드 라인 + TotalsBar + ActionBar). 화면: 견적 목록/작성/수정/상세/인쇄, 거래처, 품목, 설정, 로그인.
+
+**초기 스펙에서 진화한 결정 (구현이 기준):**
+
+- **내비게이션:** 상단 탭 → **하단 독바**(DockNav). 모바일 우선 도구에 맞고, 폼·인쇄 화면에서는 숨겨 이중 고정 바를 방지한다.
+- **품목 라인:** "모바일 세로 스택" → **행별 뷰어/편집 모드**. 입력란을 상시 펼치면 항목이 늘수록 스크롤이 폭증하므로, 기본은 컴팩트 텍스트 행이고 [수정]한 행만 펼친다. 편집 시 수량·단가·금액은 (세로 스택이 아니라) 한 줄 다열로 묶는다 — "무파손" 제약은 입력 5개를 평평하게 펴지 않는 한 만족된다.
+- **인쇄:** 단순 폭 축소 → **A4 채움 구조**(헤더 상단·본문 신축·푸터 하단) + 화면 스케일-투-핏. 가로 스크롤 0과 A4 비율을 동시에 만족한다.
+
+**데이터 백업 UI:** 설정 화면에 JSON 내보내기/가져오기 섹션을 두되, 통계 카드가 아니라 헤어라인 섹션 + secondary 버튼으로 표시한다(무카드 원칙 유지).

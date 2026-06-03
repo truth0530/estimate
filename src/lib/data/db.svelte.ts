@@ -258,6 +258,39 @@ class Database {
 		this.persist();
 	}
 
+	/* ---------- 백업: JSON 내보내기/가져오기 ----------
+	   로컬 모드의 백업 부재를 해결하고, 백엔드 동기화 전까지
+	   기기 간 수동 이전(폰에서 내보내기 → 데스크톱에서 가져오기)을 가능하게 한다. */
+	exportSnapshot(): string {
+		const snap: Snapshot & { _v: number; _exportedAt: string } = {
+			_v: 1,
+			_exportedAt: new Date().toISOString(),
+			company: this.company,
+			customers: this.customers,
+			items: this.items,
+			quotes: this.quotes
+		};
+		return JSON.stringify(snap, null, 2);
+	}
+
+	importSnapshot(json: string): { ok: boolean; error?: string } {
+		let snap: Snapshot;
+		try {
+			snap = JSON.parse(json) as Snapshot;
+		} catch {
+			return { ok: false, error: 'JSON 형식이 아닙니다.' };
+		}
+		if (!snap || typeof snap !== 'object' || !Array.isArray(snap.quotes)) {
+			return { ok: false, error: '견적 백업 파일이 아닙니다.' };
+		}
+		this.company = snap.company ?? null;
+		this.customers = snap.customers ?? [];
+		this.items = snap.items ?? [];
+		this.quotes = snap.quotes ?? [];
+		this.persist();
+		return { ok: true };
+	}
+
 	helpers = { uid, todayISO };
 }
 

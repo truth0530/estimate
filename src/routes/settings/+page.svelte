@@ -36,6 +36,36 @@
 		const f = (e.target as HTMLInputElement).files?.[0];
 		if (f) readImage(f, (d) => (form.stamp_data = d));
 	}
+	let backupMsg = $state('');
+
+	function exportBackup() {
+		const json = db.exportSnapshot();
+		const blob = new Blob([json], { type: 'application/json' });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement('a');
+		a.href = url;
+		a.download = `견적백업_${new Date().toISOString().slice(0, 10)}.json`;
+		a.click();
+		URL.revokeObjectURL(url);
+	}
+	function onImport(e: Event) {
+		const f = (e.target as HTMLInputElement).files?.[0];
+		if (!f) return;
+		if (!confirm('가져오면 현재 기기의 데이터가 백업 파일 내용으로 교체됩니다. 진행할까요?')) {
+			(e.target as HTMLInputElement).value = '';
+			return;
+		}
+		const reader = new FileReader();
+		reader.onload = () => {
+			const res = db.importSnapshot(reader.result as string);
+			backupMsg = res.ok ? '가져오기 완료' : `실패: ${res.error}`;
+			if (res.ok) form = { ...current() };
+			setTimeout(() => (backupMsg = ''), 3000);
+		};
+		reader.readAsText(f);
+		(e.target as HTMLInputElement).value = '';
+	}
+
 	function save() {
 		db.saveCompany({ ...form, id: form.id || uid() });
 		saved = true;
@@ -88,6 +118,26 @@
 		<span class="text-[14px] text-text">면세 사업자 (세액 0 처리)</span>
 		<input type="checkbox" class="size-4" bind:checked={form.is_tax_free} />
 	</label>
+</section>
+
+<section class="pt-4 pb-2">
+	<div class="flex items-baseline justify-between border-b border-line-strong pb-1.5">
+		<h2 class="text-[13px] font-semibold text-strong">데이터 백업</h2>
+		{#if backupMsg}<span class="text-[12px] text-accepted">{backupMsg}</span>{/if}
+	</div>
+	<p class="py-2 text-[12px] text-muted">
+		현재 데이터는 이 브라우저에만 저장됩니다. 주기적으로 내보내 보관하고, 다른 기기로 옮길 때
+		내보낸 파일을 가져오세요.
+	</p>
+	<div class="flex gap-2 pb-2">
+		<Button variant="secondary" onclick={exportBackup} class="flex-1">내보내기 (.json)</Button>
+		<label
+			class="inline-flex h-11 flex-1 cursor-pointer items-center justify-center rounded border border-line-strong text-[14px] font-medium text-text hover:bg-sunken"
+		>
+			<input type="file" accept="application/json,.json" class="hidden" onchange={onImport} />
+			가져오기
+		</label>
+	</div>
 </section>
 
 <div class="fixed inset-x-0 bottom-0 border-t border-line-strong bg-surface">
