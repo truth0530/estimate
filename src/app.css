@@ -1,0 +1,151 @@
+@import 'tailwindcss';
+
+/*
+  Design tokens — DESIGN.md 진실의 원천.
+  잉크 한 색 모노크롬, 헤어라인 구분, 색은 의미가 있을 때만.
+*/
+@theme {
+	--font-sans:
+		'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo',
+		'Malgun Gothic', sans-serif;
+
+	/* Action / Ink */
+	--color-ink: #18181b;
+	--color-ink-hover: #27272a;
+
+	/* Text scale (단일 잉크 농도) */
+	--color-strong: #18181b;
+	--color-text: #3f3f46;
+	--color-muted: #71717a;
+	--color-faint: #a1a1aa;
+
+	/* Surfaces */
+	--color-bg: #ffffff;
+	--color-surface: #ffffff;
+	--color-sunken: #fafafa;
+
+	/* Lines */
+	--color-line: #e4e4e7;
+	--color-line-strong: #d4d4d8;
+
+	/* Status (점·텍스트 전용) */
+	--color-draft: #a1a1aa;
+	--color-sent: #2563eb;
+	--color-accepted: #15803d;
+	--color-rejected: #b91c1c;
+	--color-canceled: #d4d4d8;
+
+	/* Functional accent */
+	--color-accent: #2563eb;
+	--color-danger: #b91c1c;
+
+	/* Radius — 라운드 최소화 */
+	--radius-sm: 4px;
+	--radius-DEFAULT: 6px;
+	--radius-md: 8px;
+}
+
+@layer base {
+	html {
+		font-family: var(--font-sans);
+		color: var(--color-text);
+		background: var(--color-bg);
+		-webkit-text-size-adjust: 100%;
+		text-rendering: optimizeLegibility;
+	}
+
+	body {
+		margin: 0;
+		font-size: 15px;
+		line-height: 1.5;
+		color: var(--color-text);
+	}
+
+	/* 헤어라인 기본 테두리 색 (Tailwind v4 기본은 currentColor) */
+	*,
+	::before,
+	::after {
+		border-color: var(--color-line);
+	}
+
+	h1,
+	h2,
+	h3 {
+		color: var(--color-strong);
+		margin: 0;
+		font-weight: 600;
+		letter-spacing: -0.01em;
+	}
+
+	input,
+	button,
+	select,
+	textarea {
+		font-family: inherit;
+		font-size: inherit;
+	}
+
+	/* 숫자 정렬 안정성 — DESIGN.md Do's */
+	.num {
+		font-variant-numeric: tabular-nums;
+	}
+
+	/* 가변 텍스트 셀 줄바꿈 무파손 */
+	.truncate-cell {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 1px;
+	}
+}
+
+@layer components {
+	/* 입력 필드 — 헤어라인 테두리, 포커스 시 잉크 */
+	.inp {
+		width: 100%;
+		height: 44px;
+		padding: 0 12px;
+		border: 1px solid var(--color-line);
+		border-radius: var(--radius-DEFAULT);
+		background: var(--color-surface);
+		color: var(--color-strong);
+		font-size: 15px;
+	}
+	.inp::placeholder {
+		color: var(--color-faint);
+	}
+	.inp:focus {
+		outline: none;
+		border-color: var(--color-ink);
+	}
+	textarea.inp {
+		height: auto;
+		padding: 10px 12px;
+		line-height: 1.5;
+		resize: vertical;
+	}
+	/* 표 셀 안의 무테 입력 (행 안에서 격자만으로 구분) */
+	.inp-cell {
+		width: 100%;
+		height: 38px;
+		padding: 0 8px;
+		border: 0;
+		background: transparent;
+		color: var(--color-strong);
+		font-size: 14px;
+	}
+	.inp-cell:focus {
+		outline: none;
+		background: var(--color-sunken);
+	}
+	/* 우측 정렬 숫자 입력 */
+	.inp-num {
+		text-align: right;
+		font-variant-numeric: tabular-nums;
+	}
+}
