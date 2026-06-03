@@ -89,6 +89,9 @@ class Database {
 		if (!raw) this.persist();
 	}
 
+	/** 마지막 저장 오류(용량 초과 등). UI가 읽어 사용자에게 알릴 수 있다. */
+	saveError = $state<string | null>(null);
+
 	private persist() {
 		if (typeof localStorage === 'undefined') return;
 		const snap: Snapshot = {
@@ -97,7 +100,21 @@ class Database {
 			items: this.items,
 			quotes: this.quotes
 		};
-		localStorage.setItem(KEY, JSON.stringify(snap));
+		try {
+			localStorage.setItem(KEY, JSON.stringify(snap));
+			this.saveError = null;
+		} catch (e) {
+			// 용량 초과 등으로 저장이 조용히 실패해 데이터가 사라지는 것을 막는다.
+			// (로고/직인 base64가 ~5MB localStorage 한도를 잠식 — PLAN.md Phase 2)
+			const quota =
+				e instanceof DOMException &&
+				(e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED');
+			this.saveError = quota
+				? '저장 공간이 가득 찼습니다. 설정에서 데이터를 백업(.json)한 뒤 로고/직인 이미지를 줄이거나 오래된 견적을 정리하세요.'
+				: '저장에 실패했습니다. 설정에서 데이터를 백업해 주세요.';
+			console.error('[db] persist 실패:', e);
+			if (typeof alert !== 'undefined') alert(this.saveError);
+		}
 	}
 
 	/* ---------- 회사 정보 ---------- */
