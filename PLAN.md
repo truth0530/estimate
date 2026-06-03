@@ -136,12 +136,29 @@ Supabase
 - 보호 라우트는 `hooks.server.ts`와 layout load에서 처리한다.
 - 1인 사용이므로 인증은 이메일+비밀번호로 충분하다. **최초 1회 가입 후 Supabase 대시보드에서 신규 가입(Sign-ups)을 비활성화**해 외부 가입을 막는다. RLS가 `owner_id = auth.uid()`로 데이터를 격리하므로, 인증을 통과한 본인 외에는 어떤 행도 보이지 않는다.
 
-### 3-2. Cloudflare Pages
+### 3-2. 호스팅 — Cloudflare Pages (vs Vercel)
 
-- SvelteKit adapter는 `@sveltejs/adapter-cloudflare`를 사용한다.
-- 무거운 서버 PDF 렌더링(Puppeteer/Chromium)은 Cloudflare 환경에 맞지 않으므로 MVP에서 제외한다.
-- Cron/keepalive가 필요하면 Cloudflare Worker Cron 또는 외부 cron 서비스를 별도로 둔다.
-- ⚠️ **Phase 1에서 가장 먼저 검증할 단 하나**: `@supabase/ssr`의 쿠키 기반 인증이 **Cloudflare Workers 엣지 런타임**에서 정상 동작하는지 스모크 테스트한다. 전체 계획이 이 한 가정 위에 서 있다. 이건 프레임워크 호환성 문제가 **아니라** 배포 어댑터 문제다 — Svelte+Supabase 호환은 이미 확정이다. 만약 엣지 런타임과 쿠키 처리가 충돌하면 해법은 **`@sveltejs/adapter-node` + Node 호스트(Vercel/Fly)로 어댑터 교체**이지, Svelte를 버리고 Next.js로 가는 것이 아니다(§0의 전환 조건과 혼동 금지).
+호스팅(앱 파일 서빙)과 백엔드(데이터, §0.1)는 **다른 층**이다. 어느 백엔드를 쓰든 호스트는 따로 고른다. SvelteKit은 어댑터 한 줄 교체로 호스트를 바꾸므로 락인은 작다.
+
+**결정: Cloudflare Pages.** 이 앱은 **사업자용 견적 도구 = 상업적 사용**인데, 이것이 결정적이다.
+
+| 기준 | Cloudflare Pages | Vercel (Hobby 무료) |
+|------|------------------|---------------------|
+| **상업적 사용** | ✅ 무료 허용 | ❌ 금지 — 사업·수익 목적은 Pro $20/월 |
+| 대역폭 | 무제한 | 100GB/월, 초과 시 앱 정지(오프라인) |
+| 빌드 | 500회/월 | 넉넉 |
+| SvelteKit | 1급(`adapter-cloudflare`) | 1급(`adapter-vercel`) |
+| 한국 지연 | 서울 엣지 | 서울 엣지(정적 동등) |
+| DX | 좋음 | 약간 더 매끄러움 |
+| Supabase 연동 | 동일(별개 서비스) | 동일 |
+
+- Vercel Hobby는 "관련자의 금전적 이득을 위한 배포"를 금지하고 위반 시 계정 정지 가능 → 사업 도구는 회색지대, 안전하려면 Pro $20/월. Cloudflare Pages는 무료로 상업 사용 허용 + 대역폭 무제한 + 초과 정지 없음.
+- Vercel의 강점(DX, Next.js 최적화)은 SvelteKit SPA인 이 앱엔 거의 이득이 없다. "Vercel로 시작하라"는 통념은 비상업·Next.js 기준이다.
+- 무거운 서버 PDF(Puppeteer/Chromium)는 어차피 클라이언트 인쇄-CSS로 대체했으므로 엣지 제약과 무관.
+- Cron/keepalive(Supabase 도입 시)는 Cloudflare Worker Cron 또는 외부 cron으로 별도.
+- **현재 배포 방식**: 순수 SPA(`ssr=false`)이므로 `@sveltejs/adapter-static`으로 정적 빌드(`build/`)해 Cloudflare Pages에 올린다(Worker 불필요·이식성 최대, 무제한 정적 대역폭에 정합). SPA 딥링크는 `static/_redirects`로 처리. SSR이 필요해지면(Phase 6 SSR 인증 등) `adapter-cloudflare`/`adapter-node`로 교체.
+
+⚠️ **Supabase를 SSR로 붙일 경우(Phase 6)** `@supabase/ssr` 쿠키 인증이 Cloudflare Workers 엣지에서 동작하는지 먼저 스모크 테스트한다. 이건 배포 어댑터 문제이지 Svelte+Supabase 호환 문제가 아니다. 충돌하면 `@sveltejs/adapter-node` + Node 호스트로 교체이지 Next.js 전환이 아니다. (현재는 SPA + 클라이언트 직접 접근이라 이 이슈는 발생하지 않는다.)
 
 ### 3-3. PDF
 

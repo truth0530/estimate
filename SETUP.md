@@ -69,10 +69,35 @@ supabase/migrations/0001_init.sql   운영 DB 스키마+RLS+RPC
 6. **최우선 검증**: `@supabase/ssr` 쿠키 인증이 Cloudflare Workers 엣지에서
    동작하는지 스모크 테스트. 충돌 시 `adapter-node`로 교체(PLAN.md §3-2).
 
-## 배포
+## 배포 — Cloudflare Pages (정적 SPA)
+
+이 앱은 순수 SPA(`ssr=false`)라 **`@sveltejs/adapter-static`** 으로 정적 빌드한다(설정 완료).
+`npm run build` → `build/` 에 정적 파일(셸·SW·매니페스트·아이콘·`_redirects`) 생성.
+호스팅은 **Cloudflare Pages**(상업적 사용 무료 허용·대역폭 무제한, PLAN §3-2).
 
 ```bash
-npm i -D @sveltejs/adapter-cloudflare
+npm run build      # build/ 산출 (정적)
 ```
-`svelte.config.js`의 adapter를 `adapter-cloudflare`로 교체 후 Cloudflare Pages 연결.
-(로컬 프로토타입은 `adapter-auto` 기본값으로 충분.)
+
+### 방법 A — Wrangler CLI (빠른 1회 배포)
+
+```bash
+npm i -D wrangler
+npx wrangler login                          # 브라우저로 Cloudflare 로그인(최초 1회)
+npx wrangler pages deploy build --project-name estimate
+```
+
+### 방법 B — GitHub 연결 (자동 배포, 권장)
+
+1. 이 저장소를 GitHub에 푸시.
+2. Cloudflare 대시보드 → Workers & Pages → Create → Pages → Connect to Git → 저장소 선택.
+3. 빌드 설정:
+   - **Build command**: `npm run build`
+   - **Build output directory**: `build`
+   - Framework preset: SvelteKit(또는 None) — output을 `build`로만 맞추면 됨.
+4. 배포 후 발급된 `https://estimate-xxxx.pages.dev` 주소를 휴대폰 사파리/크롬에서 열고
+   **홈 화면에 추가** → PWA 설치(오프라인 작동).
+
+> SPA 딥링크는 `static/_redirects`(`/* /index.html 200`)가 처리한다.
+> 데이터는 기기 로컬(localStorage)이므로, 배포 후에도 설정 화면에서 주기적 JSON 백업을 권장.
+> 다른 정적 호스트(Netlify·GitHub Pages 등)도 `build/`를 그대로 올리면 된다(호스트 락인 없음).
