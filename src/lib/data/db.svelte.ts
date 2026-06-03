@@ -32,14 +32,14 @@ function todayISO(): string {
 function seed(): Snapshot {
 	const company: Company = {
 		id: uid(),
-		business_number: '123-45-67890',
+		business_number: '502-25-27094',
 		name: '육일하우스',
 		ceo_name: '김영복',
-		address: '서울특별시 마포구 월드컵북로 12',
+		address: '대구광역시 수성구 국채보상로 1064',
 		phone: '02-1234-5678',
 		logo_data: null,
 		stamp_data: null,
-		bank_account: '국민은행 123456-00-789012',
+		bank_account: 'IM뱅크 263-07-000161-4',
 		is_tax_free: false
 	};
 	const customer: Customer = {
