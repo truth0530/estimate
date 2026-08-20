@@ -1,46 +1,52 @@
 {
-	"name": "estimate-app",
-	"private": true,
-	"version": "0.0.1",
-	"type": "module",
-	"scripts": {
-		"dev": "vite dev",
-		"build": "vite build",
-		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo '' ; git config core.hooksPath .githooks 2>/dev/null || true",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-		"test": "vitest run",
-		"test:unit": "vitest run",
-		"test:e2e": "playwright test",
-		"ci": "npm run check && npm run test:unit && npm run test:e2e && npm run build",
-		"ci:fast": "npm run check && npm run test:unit",
-		"audit": "npm audit --omit=dev --audit-level=high",
-		"scan:secrets": "gitleaks detect --no-banner --redact",
-		"security": "npm run audit && npm run scan:secrets",
-		"verify": "npm run ci && npm run security",
-		"deploy": "npm run verify && wrangler pages deploy build --project-name 6day --branch main --commit-message=deploy --commit-dirty=true",
-		"hooks:install": "git config core.hooksPath .githooks"
-	},
-	"devDependencies": {
-		"@playwright/test": "^1.60.0",
-		"@sveltejs/adapter-static": "^3.0.10",
-		"@sveltejs/kit": "^2.57.0",
-		"@sveltejs/vite-plugin-svelte": "^7.0.0",
-		"@tailwindcss/vite": "^4.3.0",
-		"svelte": "^5.55.2",
-		"svelte-check": "^4.4.6",
-		"tailwindcss": "^4.3.0",
-		"typescript": "^6.0.2",
-		"vite": "^8.0.7",
-		"vitest": "^4.1.8",
-		"wrangler": "^4.97.0"
-	},
-	"dependencies": {
-		"exceljs": "^4.4.0",
-		"fuse.js": "^7.4.1",
-		"html2canvas-pro": "^2.0.4",
-		"jspdf": "^4.2.1",
-		"jspdf-autotable": "^5.0.8"
-	}
+  "name": "estimate-app",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prepare": "svelte-kit sync || echo '' ; git config core.hooksPath .githooks 2>/dev/null || true",
+    "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+    "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "test:e2e": "playwright test",
+    "ci": "npm run check && npm run test:unit && npm run test:e2e && npm run build",
+    "ci:fast": "npm run check && npm run test:unit",
+    "audit": "npm audit --omit=dev --audit-level=high",
+    "scan:secrets": "gitleaks detect --no-banner --redact",
+    "security": "npm run audit && npm run scan:secrets",
+    "verify": "npm run ci && npm run security",
+    "deploy": "npm run verify && wrangler pages deploy build --project-name 6day --branch main --commit-message=deploy --commit-dirty=true",
+    "hooks:install": "git config core.hooksPath .githooks"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@sveltejs/adapter-static": "^3.0.10",
+    "@sveltejs/kit": "^2.57.0",
+    "@sveltejs/vite-plugin-svelte": "^7.0.0",
+    "@tailwindcss/vite": "^4.3.0",
+    "svelte": "^5.55.2",
+    "svelte-check": "^4.4.6",
+    "tailwindcss": "^4.3.0",
+    "typescript": "^6.0.2",
+    "vite": "^8.0.7",
+    "vitest": "^4.1.8",
+    "wrangler": "^4.97.0"
+  },
+  "dependencies": {
+    "exceljs": "^4.4.0",
+    "fuse.js": "^7.4.1",
+    "html2canvas-pro": "^2.0.4",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8"
+  },
+  "overrides": {
+    "brace-expansion@1": "1.1.17",
+    "brace-expansion@2": "2.1.3",
+    "brace-expansion@5": "5.0.8",
+    "@isaacs/brace-expansion": "5.0.1"
+  }
 }
